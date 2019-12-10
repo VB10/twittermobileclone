@@ -1,11 +1,11 @@
-class Trend {
+class TrendTopic {
   String location;
   String hashtag;
   String tweets;
 
-  Trend({this.location, this.hashtag, this.tweets});
+  TrendTopic({this.location, this.hashtag, this.tweets});
 
-  Trend.fromJson(Map<String, dynamic> json) {
+  TrendTopic.fromJson(Map<String, dynamic> json) {
     location = json['location'];
     hashtag = json['hashtag'];
     tweets = json['tweets'];

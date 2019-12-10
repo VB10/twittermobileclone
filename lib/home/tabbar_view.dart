@@ -45,11 +45,13 @@ class _TwitterTabbarViewState extends State<TwitterTabbarView> {
     scrollController.dispose();
   }
 
+  int currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 4,
-      initialIndex: 1,
+      initialIndex: 0,
       child: Scaffold(
         bottomNavigationBar: _bottomAppBar,
         body: Column(
@@ -63,7 +65,7 @@ class _TwitterTabbarViewState extends State<TwitterTabbarView> {
         child: TabBarView(
           children: <Widget>[
             HomeView(scrollController),
-            SearchView(),
+            SearchView(scrollController),
             Text("asdasd"),
             Text("asdasd"),
           ],
@@ -87,16 +89,52 @@ class _TwitterTabbarViewState extends State<TwitterTabbarView> {
         title: _appBarItems,
       );
 
-  Widget get _appBarItems => Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 10,
+  Widget get _appBarItems => Row(
         children: <Widget>[
           CircleAvatar(backgroundImage: NetworkImage(_githubPhotoUrl)),
-          Text("Home", style: titleTextStyle)
+          _emptyWidht,
+          Expanded(child: _centerAppBarWidget),
+          _emptyWidht,
+          Icon(
+            Icons.access_alarms,
+            color: Colors.blue,
+          )
         ],
       );
 
+  Widget get _emptyWidht => SizedBox(
+        width: 20,
+      );
+
+  Widget get _centerAppBarWidget => currentIndex == 1
+      ? _searchTextField
+      : Text("Home", style: titleTextStyle);
+
+  Widget get _searchTextField => TextField(
+      maxLines: 1,
+      decoration: InputDecoration(
+        contentPadding: EdgeInsets.all(0),
+        hintText: "Search Twitter",
+        prefixIcon: Icon(
+          Icons.search,
+          color: Colors.grey,
+        ),
+        filled: true,
+        focusedBorder: outlineInputBorder,
+        border: outlineInputBorder,
+      ));
+
+  OutlineInputBorder get outlineInputBorder => OutlineInputBorder(
+      borderSide: BorderSide(color: Colors.grey),
+      borderRadius: BorderRadius.circular(25));
+
   Widget get _tabbarItems => TabBar(
+        isScrollable: false,
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
         tabs: <Widget>[
           Tab(icon: Icon(Icons.home)),
           Tab(icon: Icon(Icons.search)),

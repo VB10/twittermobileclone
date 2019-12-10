@@ -1,120 +1,142 @@
 import 'package:flutter/material.dart';
-import 'package:twitterclone/model/trend_model.dart';
+import 'package:twitterclone/custom/refresh2.dart';
+import 'package:twitterclone/model/trend_topic.dart';
 
 class SearchView extends StatefulWidget {
+  SearchView(this.scrollController);
+  final ScrollController scrollController;
   @override
   _SearchViewState createState() => _SearchViewState();
 }
 
 class _SearchViewState extends State<SearchView> {
-  String trendsTitle = "Trends for you";
-  int itemCount = 5;
-  Trend trend;
+  double _padding = 20;
+  TrendTopic _topic;
+  bool isRefresh = false;
 
-  List<Widget> headerView = [];
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    trend = Trend(
-        hashtag: "#cukur",
+    _topic = TrendTopic(
+        hashtag: "#Champions League",
         location: "Trending in Turkey",
-        tweets: "9.844 Twets");
+        tweets: "16.8K Tweets");
   }
 
-  double headerCardWidgetHeight = 15;
+  Future tempFuture() async {
+    setState(() {
+      isRefresh = !isRefresh;
+    });
+    await Future.delayed(Duration(milliseconds: 500));
+    setState(() {
+      isRefresh = !isRefresh;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    print(headerCardWidgetHeight);
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: RefreshIndicator(
-          onRefresh: () {
-            print("asdasd");
-            headerView.clear();
-
-            return Future.value(true);
-          },
-          notificationPredicate: (isIndicator) {
-            // if (isIndicator.metrics.atEdge) {
-            //   print("asd");
-            //   setState(() {
-            //     headerCardWidgetHeight =
-            //         MediaQuery.of(context).size.height * .5;
-            //   });
-            // }
-            headerView.clear();
-            return true;
-          },
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                headerCardWidget,
-                trendsCardWidget,
-                ListView.builder(
-                  itemCount: 5,
-                  shrinkWrap: true,
-                  itemBuilder: (index, child) => Text("data"),
-                )
-              ],
-            ),
-          ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+      ),
+      body: RefreshIndicator2(
+        onRefresh: tempFuture,
+        child: ListView(
+          children: <Widget>[
+            _downIconWidget,
+            _emptySpace,
+            _trendTitleWidget,
+            _listHashView,
+          ],
         ),
       ),
     );
   }
 
-  Widget get haxd => ListView.separated(
-        key: UniqueKey(),
-        shrinkWrap: true,
-        separatorBuilder: (context, index) => Divider(),
-        itemCount: itemCount + 2,
-        itemBuilder: (context, index) =>
-            index < 2 ? headerCardWidget : trendsListWidget(model: trend),
-      );
+  Widget get _emptySpace => SizedBox(height: 10);
 
-  Widget trendsListWidget({@required Trend model}) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: Wrap(
-              direction: Axis.vertical,
-              spacing: 10,
-              children: <Widget>[
-                Text(model.location),
-                Text(model.hashtag,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headline
-                        .copyWith(fontSize: 15)),
-                Text(model.tweets),
-              ],
-            ),
-          ),
-          Icon(Icons.arrow_drop_down)
-        ],
-      );
-
-  Widget get trendsCardWidget => cardWidget(
-      Text(
-        trendsTitle,
-        style: Theme.of(context).textTheme.headline,
-      ),
-      height: MediaQuery.of(context).size.height * .05);
-
-  Widget get headerCardWidget =>
-      cardWidget(_headerChild, height: headerCardWidgetHeight);
-
-  Widget cardWidget(Widget child, {@required double height, double margin}) =>
-      AnimatedContainer(
+  Widget get _downIconWidget => AnimatedContainer(
         duration: Duration(milliseconds: 500),
-        height: height,
-        child: child,
+        height: isRefresh ? 60 : 30,
+        child: isRefresh
+            ? Center(child: CircularProgressIndicator())
+            : Icon(
+                Icons.arrow_downward,
+                color: Colors.grey,
+              ),
       );
 
-  Widget get _headerChild => Icon(
-        Icons.arrow_downward,
+  Widget get _trendTitleWidget => Card(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        margin: EdgeInsets.all(0),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+            side: BorderSide(color: Colors.grey, width: 0.5)),
+        child: Container(
+          height: 50,
+          padding: EdgeInsets.symmetric(horizontal: _padding),
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Trends for you",
+            style: Theme.of(context).textTheme.headline,
+          ),
+        ),
+      );
+
+  Widget get _divider => Divider(
+        height: 0,
         color: Colors.grey,
       );
+
+  Widget get _listHashView => ListView.separated(
+        itemCount: 5,
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        separatorBuilder: (context, index) => _divider,
+        itemBuilder: (context, index) => cardListMethod(context),
+      );
+
+  Card cardListMethod(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(
+          side: BorderSide(style: BorderStyle.none, color: Colors.transparent)),
+      child: listPadding(context),
+    );
+  }
+
+  Padding listPadding(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: _padding, vertical: 5),
+      child: row(context),
+    );
+  }
+
+  Row row(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+            child: Wrap(
+          direction: Axis.vertical,
+          spacing: 5,
+          children: <Widget>[
+            Text(_topic.location, style: Theme.of(context).textTheme.caption),
+            Text(_topic.hashtag,
+                style: Theme.of(context)
+                    .textTheme
+                    .headline
+                    .copyWith(fontSize: 15)),
+            Text(
+              _topic.tweets,
+              style: Theme.of(context).textTheme.button,
+            ),
+          ],
+        )),
+        Icon(Icons.arrow_drop_down)
+      ],
+    );
+  }
 }
